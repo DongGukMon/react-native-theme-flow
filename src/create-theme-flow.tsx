@@ -1,4 +1,5 @@
 import { createContext, useContext, type PropsWithChildren } from 'react';
+import { createThemeFactory } from './create-theme';
 import type { NestedObject, RNStyle, ValueOrFactory } from './types';
 import { getFactoryValue } from './utils/getFactoryValue';
 
@@ -44,5 +45,7 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
     }),
   };
 
-  return { ThemeProvider, useTheme, ThemeFlow };
+  const themeFactory = createThemeFactory<Theme>();
+
+  return { ThemeProvider, useTheme, ThemeFlow, themeFactory };
 };

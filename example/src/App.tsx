@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { createThemeFactory, createThemeFlow } from 'react-native-theme-flow';
+import { createThemeFlow } from 'react-native-theme-flow';
 
 interface ThemeContract {
   colors: {
@@ -9,7 +9,8 @@ interface ThemeContract {
   };
 }
 
-const themeFactory = createThemeFactory<ThemeContract>();
+const { ThemeProvider, useTheme, ThemeFlow, themeFactory } =
+  createThemeFlow<ThemeContract>();
 
 const lightTheme = themeFactory({
   colors: {
@@ -23,8 +24,6 @@ const darkTheme = themeFactory({
     secondary: '#fff111',
   },
 });
-
-const { ThemeProvider, useTheme, ThemeFlow } = createThemeFlow<ThemeContract>();
 
 const Switch = ({ switchTheme }: { switchTheme: () => void }) => {
   const styles = s.use();
