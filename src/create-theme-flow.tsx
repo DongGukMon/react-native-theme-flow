@@ -25,7 +25,7 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
 
   const ThemeFlow = {
     create: <O extends Record<string, ValueOrFactory<RNStyle, any>>>(
-      namedStyles: ValueOrFactory<O, Theme>
+      namedStyles: ValueOrFactory<O, { theme: Theme }>
     ) => ({
       use: () => {
         type MemoizedStyles = { [key in keyof O]: RNStyle | null };
@@ -49,21 +49,22 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
 
         // eslint-disable-next-line
         const currentTheme = useTheme();
-        const namedStylesWithTheme = getFactoryValue(namedStyles, currentTheme);
+        const namedStylesWithTheme = getFactoryValue(namedStyles, {
+          theme: currentTheme,
+        });
         const styleNames = Object.keys(namedStylesWithTheme);
 
         const styles = styleNames.reduce(
           (acc, cur) => {
             const style = namedStylesWithTheme[cur] ?? {};
 
+            /**
+             * function 형태인 경우, params에 따라 style이 달라지고,
+             * hook처럼 호출 순서로 맵핑하는 방식이 아닌이상 변겨사항 추적에 어려움이 있기 때문에
+             * 참조값 유지 로직을 적용하지 않음
+             */
             if (isFactory(style)) {
-              const getStyle = (params: any) => {
-                const styleValue = style(params);
-
-                return checkMemoizedStyle(cur, styleValue);
-              };
-
-              return { ...acc, [cur]: getStyle };
+              return { ...acc, [cur]: style };
             }
 
             return { ...acc, [cur]: checkMemoizedStyle(cur, style) };
