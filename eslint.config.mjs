@@ -19,6 +19,7 @@ export default defineConfig([
     extends: fixupConfigRules(compat.extends('@react-native', 'prettier')),
     plugins: { prettier },
     rules: {
+      'react-hooks/exhaustive-deps': 'off',
       'react/react-in-jsx-scope': 'off',
       'prettier/prettier': [
         'error',
@@ -33,9 +34,6 @@ export default defineConfig([
     },
   },
   {
-    ignores: [
-      'node_modules/',
-      'lib/'
-    ],
+    ignores: ['node_modules/', 'lib/'],
   },
 ]);
