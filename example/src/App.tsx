@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { createThemeFlow } from 'react-native-theme-flow';
 
 interface ThemeContract {
@@ -25,21 +25,40 @@ const darkTheme = themeFactory({
   },
 });
 
-const Switch = ({ switchTheme }: { switchTheme: () => void }) => {
+const SwitchBox = ({ switchTheme }: { switchTheme: () => void }) => {
   const styles = s.use();
   const theme = useTheme();
   console.log(theme);
 
   return (
-    <TouchableOpacity onPress={switchTheme} style={styles.container}>
-      <Text style={styles.text({ isSelected: false })}>Switch</Text>
-      <Text style={styles.text({ isSelected: true })}>Switch</Text>
-    </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={switchTheme} style={styles.textContainer}>
+        <Text style={styles.text({ isSelected: false })}>Switch</Text>
+        <Text style={styles.text({ isSelected: true })}>Switch</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
+export default function App() {
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  const switchTheme = () => setIsDarkTheme((prev) => !prev);
+
+  return (
+    <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
+      <SwitchBox switchTheme={switchTheme} />
+    </ThemeProvider>
+  );
+}
+
 const s = ThemeFlow.create((theme) => ({
   container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textContainer: {
     backgroundColor: theme.colors.secondary,
     gap: 12,
     padding: 12,
@@ -51,25 +70,3 @@ const s = ThemeFlow.create((theme) => ({
     fontSize: 27,
   }),
 }));
-
-export default function App() {
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
-
-  const switchTheme = () => setIsDarkTheme((prev) => !prev);
-
-  return (
-    <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
-      <View style={styles.container}>
-        <Switch switchTheme={switchTheme} />
-      </View>
-    </ThemeProvider>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
