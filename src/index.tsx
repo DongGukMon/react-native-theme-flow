@@ -1,3 +1,2 @@
-export function multiply(a: number, b: number): number {
-  return a * b;
-}
+export { createThemeFactory } from './create-theme';
+export { createThemeFlow } from './create-theme-flow';
