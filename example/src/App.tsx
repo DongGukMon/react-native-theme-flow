@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { memo, useReducer, useState } from 'react';
+import { Text, TouchableOpacity, View, type TextProps } from 'react-native';
 import { createThemeFlow } from 'react-native-theme-flow';
 
 interface ThemeContract {
@@ -25,16 +25,31 @@ const darkTheme = themeFactory({
   },
 });
 
+const MemoizedText = memo((props: TextProps) => {
+  return <Text {...props} />;
+});
+
 const SwitchBox = ({ switchTheme }: { switchTheme: () => void }) => {
   const styles = s.use();
   const theme = useTheme();
   console.log(theme);
 
+  const [count, forceRender] = useReducer((prev) => prev + 1, 0);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={switchTheme} style={styles.textContainer}>
-        <Text style={styles.text({ isSelected: false })}>Switch</Text>
-        <Text style={styles.text({ isSelected: true })}>Switch</Text>
+        <MemoizedText style={styles.text({ isSelected: false })}>
+          Switch
+        </MemoizedText>
+        <MemoizedText style={styles.text({ isSelected: true })}>
+          Switch
+        </MemoizedText>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={forceRender} style={styles.renderButton}>
+        <MemoizedText style={styles.rerenderText}>
+          Rerender {count}
+        </MemoizedText>
       </TouchableOpacity>
     </View>
   );
@@ -57,6 +72,7 @@ const s = ThemeFlow.create((theme) => ({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 12,
   },
   textContainer: {
     backgroundColor: theme.colors.secondary,
@@ -69,4 +85,14 @@ const s = ThemeFlow.create((theme) => ({
     fontWeight: params.isSelected ? '700' : '400',
     fontSize: 27,
   }),
+  renderButton: {
+    backgroundColor: 'yellow',
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 8,
+  },
+  rerenderText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
 }));

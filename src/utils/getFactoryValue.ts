@@ -1,6 +1,8 @@
 import type { ValueOrFactory } from '../types';
 
-const isFactory = <T, C>(v: ValueOrFactory<T, C>): v is (input: C) => T => {
+export const isFactory = <T, C>(
+  v: ValueOrFactory<T, C>
+): v is (input: C) => T => {
   return typeof v === 'function';
 };
 
