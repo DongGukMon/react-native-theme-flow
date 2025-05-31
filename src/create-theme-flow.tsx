@@ -17,11 +17,8 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
   };
 
   const ThemeFlow = {
-    create: <T extends Record<string, any>>(
-      namedStyles: ValueOrFactory<
-        Record<keyof T, ValueOrFactory<RNStyle, Theme>>,
-        Theme
-      >
+    create: <O extends Record<string, ValueOrFactory<RNStyle, any>>>(
+      namedStyles: ValueOrFactory<O, Theme>
     ) => ({
       use: () => {
         // eslint-disable-next-line
@@ -31,13 +28,15 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
 
         const styles = styleNames.reduce(
           (acc, cur) => {
-            const style = getFactoryValue(
-              namedStylesWithTheme[cur],
-              currentTheme
-            );
+            const style = namedStylesWithTheme[cur];
+
             return { ...acc, [cur]: style };
           },
-          {} as { [P in keyof T]: RNStyle }
+          {} as {
+            [K in keyof O]: O[K] extends (input: infer P) => RNStyle
+              ? (input: P) => RNStyle
+              : RNStyle;
+          }
         );
 
         return styles;

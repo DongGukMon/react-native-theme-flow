@@ -33,18 +33,29 @@ const Switch = ({ switchTheme }: { switchTheme: () => void }) => {
 
   return (
     <TouchableOpacity onPress={switchTheme} style={styles.container}>
-      <Text style={styles.text}>Result</Text>
+      <Text style={styles.text({ isSelected: false })}>Switch</Text>
+      <Text style={styles.text({ isSelected: true })}>Switch</Text>
     </TouchableOpacity>
   );
 };
 
 const s = ThemeFlow.create((theme) => ({
-  container: { backgroundColor: theme.colors.secondary },
-  text: (localTheme) => ({ color: localTheme.colors.primary }),
+  container: {
+    backgroundColor: theme.colors.secondary,
+    gap: 12,
+    padding: 12,
+    borderRadius: 10,
+  },
+  text: (params: { isSelected: boolean }) => ({
+    color: theme.colors.primary,
+    fontWeight: params.isSelected ? '700' : '400',
+    fontSize: 27,
+  }),
 }));
 
 export default function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+
   const switchTheme = () => setIsDarkTheme((prev) => !prev);
 
   return (
