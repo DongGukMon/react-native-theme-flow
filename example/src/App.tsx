@@ -1,88 +1,16 @@
-import { useReducer, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { createThemeFlow } from 'react-native-theme-flow';
-
-interface ThemeContract {
-  colors: {
-    primary: string;
-    secondary: string;
-  };
-}
-
-const { ThemeProvider, useTheme, ThemeFlow, themeFactory } =
-  createThemeFlow<ThemeContract>();
-
-const lightTheme = themeFactory({
-  colors: {
-    primary: '#fff111',
-    secondary: '#111fff',
-  },
-});
-const darkTheme = themeFactory({
-  colors: {
-    primary: '#111fff',
-    secondary: '#fff111',
-  },
-});
-
-const SwitchBox = ({ switchTheme }: { switchTheme: () => void }) => {
-  const styles = s.use();
-  const theme = useTheme();
-  console.log(theme);
-
-  const [count, forceRender] = useReducer((prev) => prev + 1, 0);
-
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={switchTheme} style={styles.textContainer}>
-        <Text style={styles.text({ isSelected: false })}>Switch</Text>
-        <Text style={styles.text({ isSelected: true })}>Switch</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={forceRender} style={styles.renderButton}>
-        <Text style={styles.rerenderText}>Rerender {count}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
+import { useState } from 'react';
+import { ExampleScreen } from './ExampleScreen';
+import { darkTheme, lightTheme, ThemeProvider } from './theme';
 
 export default function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-  const switchTheme = () => setIsDarkTheme((prev) => !prev);
+  const switchTheme = (themeName: 'light' | 'dark') =>
+    setIsDarkTheme(themeName === 'dark');
 
   return (
     <ThemeProvider theme={isDarkTheme ? darkTheme : lightTheme}>
-      <SwitchBox switchTheme={switchTheme} />
+      <ExampleScreen switchTheme={switchTheme} />
     </ThemeProvider>
   );
 }
-
-const s = ThemeFlow.create(({ theme }) => ({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  textContainer: {
-    backgroundColor: theme.colors.secondary,
-    gap: 12,
-    padding: 12,
-    borderRadius: 10,
-  },
-  text: (params: { isSelected: boolean }) => ({
-    color: theme.colors.primary,
-    fontWeight: params.isSelected ? '700' : '400',
-    fontSize: 27,
-  }),
-  renderButton: {
-    backgroundColor: 'yellow',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 8,
-  },
-  rerenderText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-}));
