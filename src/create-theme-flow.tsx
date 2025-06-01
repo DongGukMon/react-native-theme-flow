@@ -4,10 +4,10 @@ import {
   useRef,
   type PropsWithChildren,
 } from 'react';
+import { StyleSheet } from 'react-native';
 import { createThemeFactory } from './create-theme';
 import type { NestedObject, RNStyle, ValueOrFactory, WithId } from './types';
 import { getFactoryValue, isFactory } from './utils/get-factory-value';
-import { stringifyCompare } from './utils/stringifyCompare';
 
 export const createThemeFlow = <ThemeContract extends NestedObject>() => {
   type Theme = WithId<ThemeContract>;
@@ -29,24 +29,11 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
       namedStyles: ValueOrFactory<O, { theme: Theme }>
     ) => ({
       use: () => {
-        type MemoizedStyles = { [key in keyof O]: RNStyle | null };
         // eslint-disable-next-line
-        const memoizedStyles = useRef<MemoizedStyles>(
-          Object.keys(namedStyles).reduce(
-            (acc, cur) => ({ ...acc, [cur]: null }),
-            {} as MemoizedStyles
-          )
-        );
-        const checkMemoizedStyle = (key: keyof O, style: RNStyle) => {
-          const memoizedStyle = memoizedStyles.current[key];
-          const notChanged = stringifyCompare(memoizedStyle, style);
-          if (notChanged) {
-            return memoizedStyle;
-          }
-
-          memoizedStyles.current[key] = style;
-          return style;
-        };
+        const cachedStaticStyles = useRef<{
+          styles: RNStyle;
+          id: string;
+        } | null>(null);
 
         // eslint-disable-next-line
         const currentTheme = useTheme();
@@ -55,34 +42,47 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
         });
         const styleNames = Object.keys(namedStylesWithTheme);
 
-        const styles = styleNames.reduce(
+        const { dynamicStyles, staticStyles } = styleNames.reduce(
           (acc, cur) => {
             const style = namedStylesWithTheme[cur] ?? {};
-
-            /**
-             * function 형태인 경우, params에 따라 style이 달라지고,
-             * hook처럼 호출 순서로 맵핑하는 방식이 아닌 이상 변경사항 추적에 어려움이 있기 때문에
-             * 참조값 유지 로직을 적용하지 않음
-             */
             if (isFactory(style)) {
-              return { ...acc, [cur]: style };
+              return {
+                ...acc,
+                dynamicStyles: {
+                  ...acc.dynamicStyles,
+                  [cur]: style,
+                },
+              };
             }
-
-            /**
-             * TODO. stringifyCompare를 사용하지 않고
-             * theme의 변경사항만 추적해서 StyleSheet.create 결과물을 반환하는 방향으로 전향
-             * Stylesheet.create는 내부적으로 id값으로 캐싱하여 관리하기 때문에 native 데이터 전달에 효율이 좋음
-             */
-            return { ...acc, [cur]: checkMemoizedStyle(cur, style) };
+            return {
+              ...acc,
+              staticStyles: {
+                ...acc.staticStyles,
+                [cur]: style,
+              },
+            };
           },
-          {} as {
-            [K in keyof O]: O[K] extends (input: infer P) => RNStyle
-              ? (input: P) => RNStyle
-              : RNStyle;
-          }
+          {
+            dynamicStyles: {},
+            staticStyles: {},
+          } as any
         );
 
-        return styles;
+        if (currentTheme.id !== cachedStaticStyles.current?.id) {
+          cachedStaticStyles.current = {
+            styles: StyleSheet.create(staticStyles),
+            id: currentTheme.id,
+          };
+        }
+
+        return {
+          ...dynamicStyles,
+          ...cachedStaticStyles.current?.styles,
+        } as {
+          [K in keyof O]: O[K] extends (input: infer P) => RNStyle
+            ? (input: P) => RNStyle
+            : RNStyle;
+        };
       },
     }),
   };
