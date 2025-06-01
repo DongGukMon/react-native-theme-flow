@@ -5,11 +5,12 @@ import {
   type PropsWithChildren,
 } from 'react';
 import { createThemeFactory } from './create-theme';
-import type { NestedObject, RNStyle, ValueOrFactory } from './types';
-import { getFactoryValue, isFactory } from './utils/getFactoryValue';
+import type { NestedObject, RNStyle, ValueOrFactory, WithId } from './types';
+import { getFactoryValue, isFactory } from './utils/get-factory-value';
 import { stringifyCompare } from './utils/stringifyCompare';
 
-export const createThemeFlow = <Theme extends NestedObject>() => {
+export const createThemeFlow = <ThemeContract extends NestedObject>() => {
+  type Theme = WithId<ThemeContract>;
   const ThemeContext = createContext<Theme | null>(null);
 
   const useTheme = () => useContext(ThemeContext)!;
@@ -86,7 +87,7 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
     }),
   };
 
-  const themeFactory = createThemeFactory<Theme>();
+  const themeFactory = createThemeFactory<ThemeContract>();
 
   return { ThemeProvider, useTheme, ThemeFlow, themeFactory };
 };
