@@ -60,7 +60,7 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
 
             /**
              * function 형태인 경우, params에 따라 style이 달라지고,
-             * hook처럼 호출 순서로 맵핑하는 방식이 아닌이상 변겨사항 추적에 어려움이 있기 때문에
+             * hook처럼 호출 순서로 맵핑하는 방식이 아닌 이상 변경사항 추적에 어려움이 있기 때문에
              * 참조값 유지 로직을 적용하지 않음
              */
             if (isFactory(style)) {
