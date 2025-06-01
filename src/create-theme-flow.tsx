@@ -68,10 +68,11 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
           } as any
         );
 
-        if (currentTheme.id !== cachedStaticStyles.current?.id) {
+        const cachedId = JSON.stringify(staticStyles);
+        if (cachedId !== cachedStaticStyles.current?.id) {
           cachedStaticStyles.current = {
             styles: StyleSheet.create(staticStyles),
-            id: currentTheme.id,
+            id: cachedId,
           };
         }
 
