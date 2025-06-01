@@ -67,6 +67,11 @@ export const createThemeFlow = <Theme extends NestedObject>() => {
               return { ...acc, [cur]: style };
             }
 
+            /**
+             * TODO. stringifyCompare를 사용하지 않고
+             * theme의 변경사항만 추적해서 StyleSheet.create 결과물을 반환하는 방향으로 전향
+             * Stylesheet.create는 내부적으로 id값으로 캐싱하여 관리하기 때문에 native 데이터 전달에 효율이 좋음
+             */
             return { ...acc, [cur]: checkMemoizedStyle(cur, style) };
           },
           {} as {
