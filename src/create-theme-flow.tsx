@@ -24,8 +24,12 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
     );
   };
 
+  type NamedStyles<T> = { [P in keyof T]: RNStyle };
   const ThemeFlow = {
-    create: <O extends Record<string, ValueOrFactory<RNStyle, any>>>(
+    create: <
+      T extends NamedStyles<T> | NamedStyles<any>,
+      O extends { [P in keyof T]: ValueOrFactory<T[keyof T], any> },
+    >(
       namedStyles: ValueOrFactory<O, { theme: Theme }>
     ) => ({
       use: () => {
@@ -44,7 +48,7 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
 
         const { dynamicStyles, staticStyles } = styleNames.reduce(
           (acc, cur) => {
-            const style = namedStylesWithTheme[cur] ?? {};
+            const style = namedStylesWithTheme[cur as keyof T] ?? {};
             if (isFactory(style)) {
               return {
                 ...acc,
@@ -80,9 +84,9 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
           ...dynamicStyles,
           ...cachedStaticStyles.current?.styles,
         } as {
-          [K in keyof O]: O[K] extends (input: infer P) => RNStyle
-            ? (input: P) => RNStyle
-            : RNStyle;
+          [K in keyof O]: O[K] extends (input: infer P) => infer S
+            ? (input: P) => S
+            : O[K];
         };
       },
     }),
