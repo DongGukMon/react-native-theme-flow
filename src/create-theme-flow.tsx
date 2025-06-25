@@ -4,31 +4,52 @@ import {
   useRef,
   type PropsWithChildren,
 } from 'react';
-import { StyleSheet } from 'react-native';
+import { type ScaledSize, StyleSheet, useWindowDimensions } from 'react-native';
 import { createThemeFactory } from './create-theme';
 import type { NestedObject, RNStyle, ValueOrFactory, WithId } from './types';
 import { getFactoryValue, isFactory } from './utils/get-factory-value';
 
-export const createThemeFlow = <ThemeContract extends NestedObject>() => {
+export const createThemeFlow = <
+  ThemeContract extends NestedObject,
+  ExtraData extends Record<string, any> = any,
+>() => {
   type Theme = WithId<ThemeContract>;
-  const ThemeContext = createContext<Theme | null>(null);
+  const ThemeContext = createContext<{
+    theme: Theme;
+    extraData?: ExtraData;
+  } | null>(null);
 
-  const useTheme = () => useContext(ThemeContext)!;
+  const useThemeFlow = () => useContext(ThemeContext)!;
+  /**
+   * @deprecated instead use useThemeFlow
+   */
+  const useTheme = () => {
+    const { theme } = useThemeFlow();
+    return theme;
+  };
 
   const ThemeProvider = ({
     children,
     theme,
-  }: PropsWithChildren<{ theme: Theme }>) => {
+    extraData,
+  }: PropsWithChildren<{ theme: Theme; extraData?: ExtraData }>) => {
     return (
-      <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
+      <ThemeContext.Provider value={{ theme, extraData }}>
+        {children}
+      </ThemeContext.Provider>
     );
   };
 
   const ThemeFlow = {
     create: <O extends { [key: string]: ValueOrFactory<RNStyle, any> }>(
-      namedStyles: ValueOrFactory<O, { theme: Theme }>
+      namedStyles: ValueOrFactory<
+        O,
+        { theme: Theme; windowDimensions: ScaledSize } & ExtraData
+      >
     ) => ({
       use: () => {
+        // eslint-disable-next-line
+        const windowDimensions = useWindowDimensions();
         // eslint-disable-next-line
         const cachedStaticStyles = useRef<{
           styles: RNStyle;
@@ -36,10 +57,12 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
         } | null>(null);
 
         // eslint-disable-next-line
-        const currentTheme = useTheme();
+        const { theme: currentTheme, extraData } = useThemeFlow();
         const namedStylesWithTheme = getFactoryValue(namedStyles, {
           theme: currentTheme,
-        });
+          windowDimensions,
+          ...(extraData || {}),
+        } as { theme: Theme; windowDimensions: ScaledSize } & ExtraData);
         const styleNames = Object.keys(namedStylesWithTheme);
 
         const { dynamicStyles, staticStyles } = styleNames.reduce(
@@ -90,5 +113,5 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
 
   const themeFactory = createThemeFactory<ThemeContract>();
 
-  return { ThemeProvider, useTheme, ThemeFlow, themeFactory };
+  return { ThemeProvider, useTheme, useThemeFlow, ThemeFlow, themeFactory };
 };

@@ -8,8 +8,22 @@ interface ThemeContract {
   };
 }
 
-export const { ThemeProvider, useTheme, ThemeFlow, themeFactory } =
-  createThemeFlow<ThemeContract>();
+export const { ThemeProvider, useThemeFlow, ThemeFlow, themeFactory } =
+  createThemeFlow<
+    ThemeContract,
+    {
+      insets: {
+        top: number;
+        bottom: number;
+        left: number;
+        right: number;
+      };
+      userPreferences: {
+        fontSize: number;
+        animations: boolean;
+      };
+    }
+  >();
 
 export const lightTheme = themeFactory({
   name: 'light',
