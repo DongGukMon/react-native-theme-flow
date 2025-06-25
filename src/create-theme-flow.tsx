@@ -24,12 +24,8 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
     );
   };
 
-  type NamedStyles<T> = { [P in keyof T]: RNStyle };
   const ThemeFlow = {
-    create: <
-      T extends NamedStyles<T> | NamedStyles<any>,
-      O extends { [P in keyof T]: ValueOrFactory<T[keyof T], any> },
-    >(
+    create: <O extends { [key: string]: ValueOrFactory<RNStyle, any> }>(
       namedStyles: ValueOrFactory<O, { theme: Theme }>
     ) => ({
       use: () => {
@@ -48,7 +44,7 @@ export const createThemeFlow = <ThemeContract extends NestedObject>() => {
 
         const { dynamicStyles, staticStyles } = styleNames.reduce(
           (acc, cur) => {
-            const style = namedStylesWithTheme[cur as keyof T] ?? {};
+            const style = namedStylesWithTheme[cur] ?? {};
             if (isFactory(style)) {
               return {
                 ...acc,
