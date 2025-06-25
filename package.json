@@ -1,6 +1,6 @@
 {
   "name": "react-native-theme-flow",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "react native style sheet with theme",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
